@@ -207,6 +207,44 @@ data: [probA, probB]
 });
 
 }
+  async function carregarJogos() {
+
+  const url = "https://api-football-v1.p.rapidapi.com/v3/fixtures?live=all";
+
+  const options = {
+    method: 'GET',
+    headers: {
+      'X-RapidAPI-Key': 'SUA_API_KEY_AQUI',
+      'X-RapidAPI-Host': 'api-football-v1.p.rapidapi.com'
+    }
+  };
+
+  try {
+    const response = await fetch(url, options);
+    const data = await response.json();
+
+    let jogosHTML = "<h2>🔥 Jogos ao Vivo</h2>";
+
+    data.response.slice(0,5).forEach(jogo => {
+
+      let timeA = jogo.teams.home.name;
+      let timeB = jogo.teams.away.name;
+      let golsA = jogo.goals.home ?? 0;
+      let golsB = jogo.goals.away ?? 0;
+
+      jogosHTML += `
+        <div style="margin-bottom:10px;">
+          ⚽ ${timeA} ${golsA} x ${golsB} ${timeB}
+        </div>
+      `;
+    });
+
+    document.getElementById("jogos").innerHTML = jogosHTML;
+
+  } catch (error) {
+    console.log(error);
+  }
+}
 </script>
 
 </body>
