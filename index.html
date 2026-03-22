@@ -2,14 +2,16 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Analista de Apostas Pro</title>
+<title>Analista PRO V2</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 body {
-  font-family: Arial, sans-serif;
-  background: #0f172a;
-  color: #fff;
   margin: 0;
+  font-family: Arial;
+  background: #020617;
+  color: #fff;
 }
 
 header {
@@ -20,34 +22,40 @@ header {
 }
 
 .container {
-  padding: 20px;
-  max-width: 900px;
+  max-width: 1100px;
   margin: auto;
+  padding: 20px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
 }
 
 .card {
-  background: #020617;
+  background: #0f172a;
   padding: 20px;
   border-radius: 10px;
-  box-shadow: 0 0 15px rgba(34,197,94,0.2);
-  margin-bottom: 20px;
+  box-shadow: 0 0 20px rgba(34,197,94,0.2);
 }
 
 input {
+  width: 100%;
   padding: 10px;
-  margin: 5px;
-  width: 150px;
+  margin: 5px 0;
   border-radius: 6px;
   border: none;
 }
 
 button {
-  padding: 12px 20px;
+  width: 100%;
+  padding: 12px;
   background: #22c55e;
   border: none;
   border-radius: 6px;
-  cursor: pointer;
   font-weight: bold;
+  cursor: pointer;
 }
 
 button:hover {
@@ -56,113 +64,113 @@ button:hover {
 
 .resultado {
   margin-top: 20px;
-  padding: 15px;
-  background: #020617;
-  border-left: 4px solid #22c55e;
 }
 
 .alta { color: #22c55e; }
 .media { color: #facc15; }
 .baixa { color: #ef4444; }
-
-h2 { margin-top: 0; }
 </style>
 </head>
 
 <body>
 
 <header>
-  <h1>⚽ Analista de Apostas PRO</h1>
+<h1>⚽ Analista PRO V2</h1>
 </header>
 
 <div class="container">
 
+<div class="grid">
+
 <div class="card">
-  <h2>📊 Dados do Jogo</h2>
+<h2>📊 Dados</h2>
 
-  <input id="timeA" placeholder="Time A">
-  <input id="timeB" placeholder="Time B"><br>
+<input id="timeA" placeholder="Time A">
+<input id="timeB" placeholder="Time B">
 
-  <input id="golsA" type="number" placeholder="Média gols A">
-  <input id="golsB" type="number" placeholder="Média gols B"><br>
+<input id="golsA" type="number" placeholder="Média gols A">
+<input id="golsB" type="number" placeholder="Média gols B">
 
-  <input id="sofreA" type="number" placeholder="Gols sofridos A">
-  <input id="sofreB" type="number" placeholder="Gols sofridos B"><br>
+<input id="sofreA" type="number" placeholder="Sofre gols A">
+<input id="sofreB" type="number" placeholder="Sofre gols B">
 
-  <input id="formaA" type="number" placeholder="Forma A (0-5)">
-  <input id="formaB" type="number" placeholder="Forma B (0-5)"><br><br>
+<input id="formaA" type="number" placeholder="Forma A (0-5)">
+<input id="formaB" type="number" placeholder="Forma B (0-5)">
 
-  <button onclick="analisar()">🔥 Analisar Jogo</button>
+<input id="oddA" type="number" placeholder="Odd Time A">
+<input id="oddB" type="number" placeholder="Odd Time B">
+
+<button onclick="analisar()">🔥 Analisar</button>
+
+<div class="resultado" id="saida"></div>
+
 </div>
 
-<div class="card resultado" id="saida">
-  Resultado aparecerá aqui...
+<div class="card">
+<h2>📈 Probabilidade</h2>
+<canvas id="grafico"></canvas>
+</div>
+
 </div>
 
 </div>
 
 <script>
+let chart;
+
 function analisar() {
 
-  let golsA = parseFloat(document.getElementById("golsA").value);
-  let golsB = parseFloat(document.getElementById("golsB").value);
-  let sofreA = parseFloat(document.getElementById("sofreA").value);
-  let sofreB = parseFloat(document.getElementById("sofreB").value);
-  let formaA = parseFloat(document.getElementById("formaA").value);
-  let formaB = parseFloat(document.getElementById("formaB").value);
+let golsA = +golsAEl.value;
+let golsB = +golsBEl.value;
+let sofreA = +sofreAEl.value;
+let sofreB = +sofreBEl.value;
+let formaA = +formaAEl.value;
+let formaB = +formaBEl.value;
+let oddA = +oddAEl.value;
+let oddB = +oddBEl.value;
 
-  let ataqueA = golsA - sofreA;
-  let ataqueB = golsB - sofreB;
+let ataqueA = golsA - sofreA;
+let ataqueB = golsB - sofreB;
 
-  let probA = (ataqueA + formaA) * 10;
-  let probB = (ataqueB + formaB) * 10;
+let probA = (ataqueA + formaA + 1) * 15;
+let probB = (ataqueB + formaB + 1) * 15;
 
-  let totalGols = golsA + golsB;
+let total = probA + probB;
 
-  let resultado = "";
-  let confianca = "";
-  let sugestao = "";
+probA = (probA / total) * 100;
+probB = (probB / total) * 100;
 
-  // RESULTADO
-  if (probA > probB) {
-    resultado = "🏆 Favorito: Time A";
-  } else if (probB > probA) {
-    resultado = "🏆 Favorito: Time B";
-  } else {
-    resultado = "⚖️ Jogo equilibrado";
-  }
+let confianca = Math.abs(probA - probB);
 
-  // OVER / UNDER
-  if (totalGols >= 2.5) {
-    sugestao = "🔥 Sugestão: OVER 2.5 gols";
-  } else {
-    sugestao = "⚠️ Sugestão: UNDER 2.5 gols";
-  }
+let nivel = confianca > 20 ? "Alta" : confianca > 10 ? "Média" : "Baixa";
 
-  // AMBAS MARCAM
-  if (golsA > 1 && golsB > 1) {
-    sugestao += "<br>⚽ Ambas marcam: SIM";
-  } else {
-    sugestao += "<br>⚽ Ambas marcam: NÃO";
-  }
+let valorA = (probA/100) * oddA;
+let valorB = (probB/100) * oddB;
 
-  // CONFIANÇA
-  let diff = Math.abs(probA - probB);
+let valueBet = valorA > 1 ? "Time A" : valorB > 1 ? "Time B" : "Nenhum";
 
-  if (diff > 15) {
-    confianca = "<span class='alta'>🔥 Alta</span>";
-  } else if (diff > 7) {
-    confianca = "<span class='media'>⚠️ Média</span>";
-  } else {
-    confianca = "<span class='baixa'>❌ Baixa</span>";
-  }
+document.getElementById("saida").innerHTML = `
+🏆 Favorito: ${probA > probB ? "Time A" : "Time B"}<br><br>
+📊 Prob A: ${probA.toFixed(1)}%<br>
+📊 Prob B: ${probB.toFixed(1)}%<br><br>
 
-  document.getElementById("saida").innerHTML = `
-    <h2>📈 Análise do Jogo</h2>
-    ${resultado}<br><br>
-    ${sugestao}<br><br>
-    🎯 Nível de Confiança: ${confianca}
-  `;
+💰 Value Bet: ${valueBet}<br>
+🎯 Confiança: ${nivel}
+`;
+
+if(chart) chart.destroy();
+
+chart = new Chart(document.getElementById("grafico"), {
+type: 'bar',
+data: {
+labels: ['Time A', 'Time B'],
+datasets: [{
+label: 'Probabilidade (%)',
+data: [probA, probB]
+}]
+}
+});
+
 }
 </script>
 
