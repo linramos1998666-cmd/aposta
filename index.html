@@ -151,23 +151,30 @@ let chart;
 // ================= API =================
 async function carregarJogos() {
 
-  const url = "https://api-football-v1.p.rapidapi.com/v3/fixtures?live=all";
-
-  const options = {
-    method: 'GET',
-    headers: {
-      'X-RapidAPI-Key': 'SUA_API_KEY_AQUI',
-      'X-RapidAPI-Host': 'api-football-v1.p.rapidapi.com'
-    }
-  };
-
   try {
-    const response = await fetch(url, options);
+    const response = await fetch("https://www.thesportsdb.com/api/v1/json/3/eventsday.php?d=2026-03-22&s=Soccer");
     const data = await response.json();
 
     let html = "";
 
-    data.response.slice(0,10).forEach(jogo => {
+    data.events.slice(0,10).forEach(jogo => {
+
+      let timeA = jogo.strHomeTeam;
+      let timeB = jogo.strAwayTeam;
+
+      html += `
+        <div class="jogo" onclick="selecionarJogo('${timeA}','${timeB}')">
+          ⚽ ${timeA} vs ${timeB}
+        </div>
+      `;
+    });
+
+    document.getElementById("jogos").innerHTML = html;
+
+  } catch (error) {
+    document.getElementById("jogos").innerHTML = "Erro ao carregar jogos ❌";
+  }
+}
 
       let timeA = jogo.teams.home.name;
       let timeB = jogo.teams.away.name;
