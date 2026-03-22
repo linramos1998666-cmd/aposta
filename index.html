@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Analista PRO V2</title>
+<title>Analista PRO VIP</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -19,6 +19,11 @@ header {
   padding: 20px;
   text-align: center;
   border-bottom: 2px solid #22c55e;
+}
+
+header p {
+  color: #22c55e;
+  margin-top: 5px;
 }
 
 .container {
@@ -64,18 +69,30 @@ button:hover {
 
 .resultado {
   margin-top: 20px;
+  background: #020617;
+  border: 1px solid #22c55e;
+  border-radius: 10px;
+  padding: 15px;
 }
 
 .alta { color: #22c55e; }
 .media { color: #facc15; }
 .baixa { color: #ef4444; }
+
+/* RESPONSIVO */
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
 </style>
 </head>
 
 <body>
 
 <header>
-<h1>⚽ Analista PRO V2</h1>
+  <h1>⚽ ANALISTA PRO VIP</h1>
+  <p>Sistema avançado de análise esportiva</p>
 </header>
 
 <div class="container">
@@ -120,14 +137,17 @@ let chart;
 
 function analisar() {
 
-let golsA = +golsAEl.value;
-let golsB = +golsBEl.value;
-let sofreA = +sofreAEl.value;
-let sofreB = +sofreBEl.value;
-let formaA = +formaAEl.value;
-let formaB = +formaBEl.value;
-let oddA = +oddAEl.value;
-let oddB = +oddBEl.value;
+let timeA = document.getElementById("timeA").value || "Time A";
+let timeB = document.getElementById("timeB").value || "Time B";
+
+let golsA = +document.getElementById("golsA").value || 0;
+let golsB = +document.getElementById("golsB").value || 0;
+let sofreA = +document.getElementById("sofreA").value || 0;
+let sofreB = +document.getElementById("sofreB").value || 0;
+let formaA = +document.getElementById("formaA").value || 0;
+let formaB = +document.getElementById("formaB").value || 0;
+let oddA = +document.getElementById("oddA").value || 1;
+let oddB = +document.getElementById("oddB").value || 1;
 
 let ataqueA = golsA - sofreA;
 let ataqueB = golsB - sofreB;
@@ -140,22 +160,37 @@ let total = probA + probB;
 probA = (probA / total) * 100;
 probB = (probB / total) * 100;
 
-let confianca = Math.abs(probA - probB);
+let diff = Math.abs(probA - probB);
 
-let nivel = confianca > 20 ? "Alta" : confianca > 10 ? "Média" : "Baixa";
+let nivel = diff > 20 ? "<span class='alta'>🔥 Alta</span>" :
+             diff > 10 ? "<span class='media'>⚠️ Média</span>" :
+                         "<span class='baixa'>❌ Baixa</span>";
 
 let valorA = (probA/100) * oddA;
 let valorB = (probB/100) * oddB;
 
-let valueBet = valorA > 1 ? "Time A" : valorB > 1 ? "Time B" : "Nenhum";
+let valueBet = valorA > 1 ? timeA : valorB > 1 ? timeB : "Nenhum";
+
+let analiseTexto = "";
+
+if(probA > probB){
+  analiseTexto = `${timeA} apresenta melhor desempenho ofensivo e maior consistência recente.`;
+}else if(probB > probA){
+  analiseTexto = `${timeB} chega mais forte com base nos dados e forma atual.`;
+}else{
+  analiseTexto = `Jogo equilibrado, sem vantagem clara.`;
+}
 
 document.getElementById("saida").innerHTML = `
-🏆 Favorito: ${probA > probB ? "Time A" : "Time B"}<br><br>
-📊 Prob A: ${probA.toFixed(1)}%<br>
-📊 Prob B: ${probB.toFixed(1)}%<br><br>
+🏆 Favorito: <b>${probA > probB ? timeA : timeB}</b><br><br>
 
-💰 Value Bet: ${valueBet}<br>
-🎯 Confiança: ${nivel}
+📊 ${timeA}: ${probA.toFixed(1)}%<br>
+📊 ${timeB}: ${probB.toFixed(1)}%<br><br>
+
+💰 Value Bet: <b style="color:#22c55e">${valueBet}</b><br>
+🎯 Confiança: ${nivel}<br><br>
+
+🧠 Análise: ${analiseTexto}
 `;
 
 if(chart) chart.destroy();
@@ -163,7 +198,7 @@ if(chart) chart.destroy();
 chart = new Chart(document.getElementById("grafico"), {
 type: 'bar',
 data: {
-labels: ['Time A', 'Time B'],
+labels: [timeA, timeB],
 datasets: [{
 label: 'Probabilidade (%)',
 data: [probA, probB]
