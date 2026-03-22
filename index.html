@@ -15,7 +15,6 @@ body {
 }
 
 header {
-  background: #020617;
   padding: 20px;
   text-align: center;
   border-bottom: 2px solid #22c55e;
@@ -23,7 +22,6 @@ header {
 
 header p {
   color: #22c55e;
-  margin-top: 5px;
 }
 
 .container {
@@ -79,7 +77,16 @@ button:hover {
 .media { color: #facc15; }
 .baixa { color: #ef4444; }
 
-/* RESPONSIVO */
+.jogo {
+  padding: 10px;
+  border-bottom: 1px solid #1e293b;
+  cursor: pointer;
+}
+
+.jogo:hover {
+  background: #1e293b;
+}
+
 @media (max-width: 768px) {
   .grid {
     grid-template-columns: 1fr;
@@ -96,6 +103,12 @@ button:hover {
 </header>
 
 <div class="container">
+
+<div class="card">
+  <h2>🔥 Jogos ao Vivo</h2>
+  <button onclick="carregarJogos()">Carregar Jogos</button>
+  <div id="jogos">Clique para buscar jogos...</div>
+</div>
 
 <div class="grid">
 
@@ -135,6 +148,53 @@ button:hover {
 <script>
 let chart;
 
+// ================= API =================
+async function carregarJogos() {
+
+  const url = "https://api-football-v1.p.rapidapi.com/v3/fixtures?live=all";
+
+  const options = {
+    method: 'GET',
+    headers: {
+      'X-RapidAPI-Key': 'SUA_API_KEY_AQUI',
+      'X-RapidAPI-Host': 'api-football-v1.p.rapidapi.com'
+    }
+  };
+
+  try {
+    const response = await fetch(url, options);
+    const data = await response.json();
+
+    let html = "";
+
+    data.response.slice(0,10).forEach(jogo => {
+
+      let timeA = jogo.teams.home.name;
+      let timeB = jogo.teams.away.name;
+      let golsA = jogo.goals.home ?? 0;
+      let golsB = jogo.goals.away ?? 0;
+
+      html += `
+        <div class="jogo" onclick="selecionarJogo('${timeA}','${timeB}')">
+          ⚽ ${timeA} ${golsA} x ${golsB} ${timeB}
+        </div>
+      `;
+    });
+
+    document.getElementById("jogos").innerHTML = html;
+
+  } catch (error) {
+    document.getElementById("jogos").innerHTML = "Erro ao carregar API ❌";
+  }
+}
+
+// clicar no jogo
+function selecionarJogo(a,b){
+  document.getElementById("timeA").value = a;
+  document.getElementById("timeB").value = b;
+}
+
+// ================= ANALISE =================
 function analisar() {
 
 let timeA = document.getElementById("timeA").value || "Time A";
@@ -171,15 +231,9 @@ let valorB = (probB/100) * oddB;
 
 let valueBet = valorA > 1 ? timeA : valorB > 1 ? timeB : "Nenhum";
 
-let analiseTexto = "";
-
-if(probA > probB){
-  analiseTexto = `${timeA} apresenta melhor desempenho ofensivo e maior consistência recente.`;
-}else if(probB > probA){
-  analiseTexto = `${timeB} chega mais forte com base nos dados e forma atual.`;
-}else{
-  analiseTexto = `Jogo equilibrado, sem vantagem clara.`;
-}
+let analiseTexto = probA > probB
+  ? `${timeA} apresenta melhor desempenho e maior consistência.`
+  : `${timeB} chega mais forte com base nos dados atuais.`;
 
 document.getElementById("saida").innerHTML = `
 🏆 Favorito: <b>${probA > probB ? timeA : timeB}</b><br><br>
@@ -190,7 +244,7 @@ document.getElementById("saida").innerHTML = `
 💰 Value Bet: <b style="color:#22c55e">${valueBet}</b><br>
 🎯 Confiança: ${nivel}<br><br>
 
-🧠 Análise: ${analiseTexto}
+🧠 ${analiseTexto}
 `;
 
 if(chart) chart.destroy();
@@ -207,48 +261,7 @@ data: [probA, probB]
 });
 
 }
-  async function carregarJogos() {
-
-  const url = "https://api-football-v1.p.rapidapi.com/v3/fixtures?live=all";
-
-  const options = {
-    method: 'GET',
-    headers: {
-      'X-RapidAPI-Key': '3440265dacmshebb9fbd5293eef5p1014f3jsn2e871bf53dd1',
-      'X-RapidAPI-Host': 'api-football-v1.p.rapidapi.com'
-    }
-  };
-
-  try {
-    const response = await fetch(url, options);
-    const data = await response.json();
-
-    let jogosHTML = "<h2>🔥 Jogos ao Vivo</h2>";
-
-    data.response.slice(0,5).forEach(jogo => {
-
-      let timeA = jogo.teams.home.name;
-      let timeB = jogo.teams.away.name;
-      let golsA = jogo.goals.home ?? 0;
-      let golsB = jogo.goals.away ?? 0;
-
-      jogosHTML += `
-        <div style="margin-bottom:10px;">
-          ⚽ ${timeA} ${golsA} x ${golsB} ${timeB}
-        </div>
-      `;
-    });
-
-    document.getElementById("jogos").innerHTML = jogosHTML;
-
-  } catch (error) {
-    console.log(error);
-  }
-}
 </script>
-carregarJogos();
+
 </body>
-  <div class="card">
-  <div id="jogos">Carregando jogos...</div>
-</div>
 </html>
