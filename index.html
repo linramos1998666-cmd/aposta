@@ -105,7 +105,7 @@ button:hover {
 <div class="container">
 
 <div class="card">
-  <h2>🔥 Jogos ao Vivo</h2>
+  <h2>🔥 Jogos do Dia</h2>
   <button onclick="carregarJogos()">Carregar Jogos</button>
   <div id="jogos">Clique para buscar jogos...</div>
 </div>
@@ -148,7 +148,7 @@ button:hover {
 <script>
 let chart;
 
-// ================= API =================
+// ================= API SEM KEY =================
 async function carregarJogos() {
 
   try {
@@ -156,6 +156,11 @@ async function carregarJogos() {
     const data = await response.json();
 
     let html = "";
+
+    if (!data.events) {
+      document.getElementById("jogos").innerHTML = "Sem jogos hoje ❌";
+      return;
+    }
 
     data.events.slice(0,10).forEach(jogo => {
 
@@ -173,25 +178,6 @@ async function carregarJogos() {
 
   } catch (error) {
     document.getElementById("jogos").innerHTML = "Erro ao carregar jogos ❌";
-  }
-}
-
-      let timeA = jogo.teams.home.name;
-      let timeB = jogo.teams.away.name;
-      let golsA = jogo.goals.home ?? 0;
-      let golsB = jogo.goals.away ?? 0;
-
-      html += `
-        <div class="jogo" onclick="selecionarJogo('${timeA}','${timeB}')">
-          ⚽ ${timeA} ${golsA} x ${golsB} ${timeB}
-        </div>
-      `;
-    });
-
-    document.getElementById("jogos").innerHTML = html;
-
-  } catch (error) {
-    document.getElementById("jogos").innerHTML = "Erro ao carregar API ❌";
   }
 }
 
