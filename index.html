@@ -12,7 +12,14 @@ header { padding:20px; text-align:center; border-bottom:2px solid #22c55e;}
 .container { max-width:1300px; margin:auto; padding:20px;}
 .grid { display:grid; grid-template-columns:1fr 2fr; gap:20px;}
 .card { background:#0f172a; padding:20px; border-radius:12px;}
-.jogo { padding:10px; border-bottom:1px solid #1e293b; cursor:pointer;}
+.jogo {
+  padding:10px;
+  border-bottom:1px solid #1e293b;
+  border-left:4px solid #22c55e;
+  margin-bottom:8px;
+  border-radius:6px;
+  cursor:pointer;
+}
 .jogo:hover { background:#1e293b;}
 .resultado { background:#020617; border:1px solid #22c55e; padding:15px; border-radius:10px;}
 button { padding:10px; width:100%; background:#22c55e; border:none; border-radius:6px; margin-bottom:10px; cursor:pointer;}
@@ -47,15 +54,11 @@ button { padding:10px; width:100%; background:#22c55e; border:none; border-radiu
 <script>
 let chart;
 
-// ================= API ODDS =================
+// ================= API SEGURA =================
 async function carregarJogos() {
 
-  const apiKey = "c652908a94bc3cc4a43c631260dcc724";
-
-  const url = `https://api.the-odds-api.com/v4/sports/soccer/odds/?regions=eu&markets=h2h&apiKey=${apiKey}`;
-
   try {
-    const res = await fetch(url);
+    const res = await fetch("/api/odds");
     const data = await res.json();
 
     let html = "";
@@ -66,21 +69,19 @@ async function carregarJogos() {
       let timeB = jogo.away_team;
 
       let oddA = 2;
-let oddB = 2;
+      let oddB = 2;
 
-if (jogo.bookmakers && jogo.bookmakers.length > 0) {
-  let market = jogo.bookmakers[0].markets.find(m => m.key === "h2h");
+      if (jogo.bookmakers && jogo.bookmakers.length > 0) {
 
-  if (market) {
-    let outcomes = market.outcomes;
+        let market = jogo.bookmakers[0].markets.find(m => m.key === "h2h");
 
-    oddA = outcomes.find(o => o.name === timeA)?.price || 2;
-    oddB = outcomes.find(o => o.name === timeB)?.price || 2;
-  }
-}
+        if (market) {
+          let outcomes = market.outcomes;
 
-      let oddA = odds.find(o=>o.name===timeA)?.price || 2;
-      let oddB = odds.find(o=>o.name===timeB)?.price || 2;
+          oddA = outcomes.find(o => o.name === timeA)?.price || 2;
+          oddB = outcomes.find(o => o.name === timeB)?.price || 2;
+        }
+      }
 
       html += `
         <div class="jogo" onclick="analisar('${timeA}','${timeB}',${oddA},${oddB})">
@@ -97,7 +98,7 @@ if (jogo.bookmakers && jogo.bookmakers.length > 0) {
   }
 }
 
-// ================= IA =================
+// ================= IA PROFISSIONAL =================
 function analisar(timeA,timeB,oddA,oddB){
 
   let probA = (1/oddA) * 100;
@@ -123,10 +124,18 @@ function analisar(timeA,timeB,oddA,oddB){
     sugestao = "⚠️ Jogo arriscado";
   }
 
+  // CLASSIFICAÇÃO PROFISSIONAL
+  let vantagem = Math.abs(probA - probB);
+
+  let classificacao =
+    vantagem > 25 ? "🔥 APOSTA FORTE" :
+    vantagem > 15 ? "⚠️ BOA APOSTA" :
+    "❌ EVITAR";
+
   document.getElementById("saida").innerHTML = `
 <b>${timeA} vs ${timeB}</b><br><br>
 
-📊 Probabilidades reais:<br>
+📊 Probabilidades:<br>
 ${timeA}: ${probA.toFixed(1)}%<br>
 ${timeB}: ${probB.toFixed(1)}%<br><br>
 
@@ -134,6 +143,8 @@ ${timeB}: ${probB.toFixed(1)}%<br><br>
 ${oddA} | ${oddB}<br><br>
 
 💎 Value Bet: <b style="color:#22c55e">${value}</b><br><br>
+
+🏆 Classificação: <b>${classificacao}</b><br><br>
 
 🧠 IA: ${sugestao}
 `;
