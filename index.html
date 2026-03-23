@@ -2,60 +2,131 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Analista PRO REAL</title>
+<title>Analista PRO VIP</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 body { margin:0; font-family:Arial; background:#020617; color:#fff;}
-header { padding:20px; text-align:center; border-bottom:2px solid #22c55e;}
-.container { max-width:1300px; margin:auto; padding:20px;}
-.grid { display:grid; grid-template-columns:1fr 2fr; gap:20px;}
-.card { background:#0f172a; padding:20px; border-radius:12px;}
+
+header {
+  padding:20px;
+  text-align:center;
+  border-bottom:2px solid #22c55e;
+}
+
+.container {
+  max-width:1300px;
+  margin:auto;
+  padding:20px;
+}
+
+.grid {
+  display:grid;
+  grid-template-columns:1fr 2fr;
+  gap:20px;
+}
+
+.card {
+  background:#0f172a;
+  padding:20px;
+  border-radius:12px;
+}
+
 .jogo {
-  padding:10px;
-  border-bottom:1px solid #1e293b;
+  padding:12px;
   border-left:4px solid #22c55e;
-  margin-bottom:8px;
+  margin-bottom:10px;
   border-radius:6px;
   cursor:pointer;
+  background:#020617;
 }
-.jogo:hover { background:#1e293b;}
-.resultado { background:#020617; border:1px solid #22c55e; padding:15px; border-radius:10px;}
-button { padding:10px; width:100%; background:#22c55e; border:none; border-radius:6px; margin-bottom:10px; cursor:pointer;}
+
+.jogo:hover {
+  background:#1e293b;
+}
+
+.resultado {
+  background:#020617;
+  border:1px solid #22c55e;
+  padding:15px;
+  border-radius:10px;
+  margin-top:10px;
+}
+
+button {
+  padding:12px;
+  width:100%;
+  background:#22c55e;
+  border:none;
+  border-radius:6px;
+  margin-bottom:10px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.vip-box {
+  margin-top:15px;
+  padding:15px;
+  background:#111827;
+  border-radius:8px;
+  text-align:center;
+}
+
+.value {
+  color:#22c55e;
+  font-size:18px;
+  font-weight:bold;
+}
 </style>
 </head>
 
 <body>
 
 <header>
-<h1>⚽ ANALISTA PRO REAL</h1>
+<h1>⚽ ANALISTA PRO VIP</h1>
 <p style="color:#22c55e;">IA com Odds Reais</p>
 </header>
 
 <div class="container">
+
 <div class="grid">
 
 <div class="card">
 <h2>🔥 Jogos + Odds</h2>
-<button onclick="carregarJogos()">Atualizar</button>
-<div id="jogos"></div>
+
+<button onclick="carregarJogos()">Atualizar Jogos</button>
+
+<div id="jogos">Clique para carregar jogos...</div>
 </div>
 
 <div class="card">
 <h2>📊 Análise Profissional</h2>
-<div id="saida" class="resultado">Clique em um jogo</div>
+
+<div id="saida" class="resultado">
+Clique em um jogo para analisar
+</div>
+
 <canvas id="grafico"></canvas>
+
+<div class="vip-box">
+🔒 Acesso VIP desbloqueia análises completas<br><br>
+<button onclick="alert('Área VIP em breve 💰')">Entrar no VIP</button>
 </div>
 
 </div>
+
+</div>
+
 </div>
 
 <script>
 let chart;
 
-// ================= API SEGURA =================
+// ================= API =================
 async function carregarJogos() {
+
+  document.getElementById("jogos").innerHTML = "⏳ Carregando jogos...";
 
   try {
     const res = await fetch("/api/odds");
@@ -86,6 +157,7 @@ async function carregarJogos() {
       html += `
         <div class="jogo" onclick="analisar('${timeA}','${timeB}',${oddA},${oddB})">
           ⚽ ${timeA} vs ${timeB}<br>
+          <div style="color:#22c55e; font-size:12px;">HOJE</div>
           💰 ${oddA} | ${oddB}
         </div>
       `;
@@ -93,12 +165,12 @@ async function carregarJogos() {
 
     document.getElementById("jogos").innerHTML = html;
 
-  } catch (error) {
-    document.getElementById("jogos").innerHTML = "Erro na API ❌";
+  } catch {
+    document.getElementById("jogos").innerHTML = "Erro ao carregar API ❌";
   }
 }
 
-// ================= IA PROFISSIONAL =================
+// ================= IA =================
 function analisar(timeA,timeB,oddA,oddB){
 
   let probA = (1/oddA) * 100;
@@ -114,37 +186,28 @@ function analisar(timeA,timeB,oddA,oddB){
 
   let value = valorA > 1 ? timeA : valorB > 1 ? timeB : "Nenhum";
 
-  let sugestao = "";
-
-  if(probA > 60){
-    sugestao = "🔥 Apostar em " + timeA;
-  } else if(probB > 60){
-    sugestao = "🔥 Apostar em " + timeB;
-  } else {
-    sugestao = "⚠️ Jogo arriscado";
-  }
-
-  // CLASSIFICAÇÃO PROFISSIONAL
   let vantagem = Math.abs(probA - probB);
 
   let classificacao =
     vantagem > 25 ? "🔥 APOSTA FORTE" :
-    vantagem > 15 ? "⚠️ BOA APOSTA" :
+    vantagem > 15 ? "⚠️ BOA OPORTUNIDADE" :
     "❌ EVITAR";
+
+  let sugestao = vantagem > 20
+    ? "Entrada com alto potencial"
+    : "Risco elevado";
 
   document.getElementById("saida").innerHTML = `
 <b>${timeA} vs ${timeB}</b><br><br>
 
-📊 Probabilidades:<br>
-${timeA}: ${probA.toFixed(1)}%<br>
-${timeB}: ${probB.toFixed(1)}%<br><br>
+📊 ${timeA}: ${probA.toFixed(1)}%<br>
+📊 ${timeB}: ${probB.toFixed(1)}%<br><br>
 
-💰 Odds:<br>
-${oddA} | ${oddB}<br><br>
+💰 Odds: ${oddA} | ${oddB}<br><br>
 
-💎 Value Bet: <b style="color:#22c55e">${value}</b><br><br>
+💎 Value Bet: <span class="value">${value}</span><br><br>
 
-🏆 Classificação: <b>${classificacao}</b><br><br>
+🏆 Classificação: ${classificacao}<br><br>
 
 🧠 IA: ${sugestao}
 `;
