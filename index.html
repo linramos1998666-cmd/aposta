@@ -50,7 +50,7 @@ let chart;
 // ================= API ODDS =================
 async function carregarJogos() {
 
-  const apiKey = "SUA_API_KEY_AQUI";
+  const apiKey = "c652908a94bc3cc4a43c631260dcc724";
 
   const url = `https://api.the-odds-api.com/v4/sports/soccer/odds/?regions=eu&markets=h2h&apiKey=${apiKey}`;
 
@@ -80,15 +80,14 @@ async function carregarJogos() {
 
     document.getElementById("jogos").innerHTML = html;
 
-  } catch {
+  } catch (error) {
     document.getElementById("jogos").innerHTML = "Erro na API ❌";
   }
 }
 
-// ================= IA REAL =================
+// ================= IA =================
 function analisar(timeA,timeB,oddA,oddB){
 
-  // Probabilidade baseada em odds
   let probA = (1/oddA) * 100;
   let probB = (1/oddB) * 100;
 
@@ -97,13 +96,11 @@ function analisar(timeA,timeB,oddA,oddB){
   probA = (probA/total)*100;
   probB = (probB/total)*100;
 
-  // VALUE BET
   let valorA = probA/100 * oddA;
   let valorB = probB/100 * oddB;
 
   let value = valorA > 1 ? timeA : valorB > 1 ? timeB : "Nenhum";
 
-  // IA decisão
   let sugestao = "";
 
   if(probA > 60){
