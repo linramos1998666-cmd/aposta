@@ -2,124 +2,78 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Analista PRO VIP</title>
+<title>Analista PRO REAL</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body {
-  margin: 0;
-  font-family: Arial;
-  background: #020617;
-  color: #fff;
-}
-
-header {
-  padding: 20px;
-  text-align: center;
-  border-bottom: 2px solid #22c55e;
-}
-
-.container {
-  max-width: 1300px;
-  margin: auto;
-  padding: 20px;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 20px;
-}
-
-.card {
-  background: #0f172a;
-  padding: 20px;
-  border-radius: 12px;
-}
-
-.jogo {
-  padding: 10px;
-  border-bottom: 1px solid #1e293b;
-  cursor: pointer;
-}
-
-.jogo:hover {
-  background: #1e293b;
-}
-
-.resultado {
-  background: #020617;
-  border: 1px solid #22c55e;
-  padding: 15px;
-  border-radius: 10px;
-}
-
-button {
-  padding: 10px;
-  width: 100%;
-  background: #22c55e;
-  border: none;
-  border-radius: 6px;
-  margin-bottom: 10px;
-  cursor: pointer;
-}
-
-@media (max-width: 768px) {
-  .grid {
-    grid-template-columns: 1fr;
-  }
-}
+body { margin:0; font-family:Arial; background:#020617; color:#fff;}
+header { padding:20px; text-align:center; border-bottom:2px solid #22c55e;}
+.container { max-width:1300px; margin:auto; padding:20px;}
+.grid { display:grid; grid-template-columns:1fr 2fr; gap:20px;}
+.card { background:#0f172a; padding:20px; border-radius:12px;}
+.jogo { padding:10px; border-bottom:1px solid #1e293b; cursor:pointer;}
+.jogo:hover { background:#1e293b;}
+.resultado { background:#020617; border:1px solid #22c55e; padding:15px; border-radius:10px;}
+button { padding:10px; width:100%; background:#22c55e; border:none; border-radius:6px; margin-bottom:10px; cursor:pointer;}
 </style>
 </head>
 
 <body>
 
 <header>
-<h1>⚽ ANALISTA PRO VIP</h1>
-<p style="color:#22c55e;">Dashboard inteligente de apostas</p>
+<h1>⚽ ANALISTA PRO REAL</h1>
+<p style="color:#22c55e;">IA com Odds Reais</p>
 </header>
 
 <div class="container">
-
 <div class="grid">
 
-<!-- LISTA DE JOGOS -->
 <div class="card">
-<h2>🔥 Jogos</h2>
-<button onclick="carregarJogos()">Atualizar Jogos</button>
+<h2>🔥 Jogos + Odds</h2>
+<button onclick="carregarJogos()">Atualizar</button>
 <div id="jogos"></div>
 </div>
 
-<!-- ANALISE -->
 <div class="card">
-<h2>📊 Análise Inteligente</h2>
-<div id="saida" class="resultado">Clique em um jogo para analisar</div>
+<h2>📊 Análise Profissional</h2>
+<div id="saida" class="resultado">Clique em um jogo</div>
 <canvas id="grafico"></canvas>
 </div>
 
 </div>
-
 </div>
 
 <script>
 let chart;
 
-// ================= API =================
+// ================= API ODDS =================
 async function carregarJogos() {
+
+  const apiKey = "SUA_API_KEY_AQUI";
+
+  const url = `https://api.the-odds-api.com/v4/sports/soccer/odds/?regions=eu&markets=h2h&apiKey=${apiKey}`;
+
   try {
-    const response = await fetch("https://www.thesportsdb.com/api/v1/json/3/eventsday.php?d=2026-03-22&s=Soccer");
-    const data = await response.json();
+    const res = await fetch(url);
+    const data = await res.json();
 
     let html = "";
 
-    data.events.slice(0,15).forEach(jogo => {
-      let a = jogo.strHomeTeam;
-      let b = jogo.strAwayTeam;
+    data.slice(0,10).forEach(jogo => {
+
+      let timeA = jogo.home_team;
+      let timeB = jogo.away_team;
+
+      let odds = jogo.bookmakers[0].markets[0].outcomes;
+
+      let oddA = odds.find(o=>o.name===timeA)?.price || 2;
+      let oddB = odds.find(o=>o.name===timeB)?.price || 2;
 
       html += `
-        <div class="jogo" onclick="analisarJogo('${a}','${b}')">
-          ⚽ ${a} vs ${b}
+        <div class="jogo" onclick="analisar('${timeA}','${timeB}',${oddA},${oddB})">
+          ⚽ ${timeA} vs ${timeB}<br>
+          💰 ${oddA} | ${oddB}
         </div>
       `;
     });
@@ -127,61 +81,52 @@ async function carregarJogos() {
     document.getElementById("jogos").innerHTML = html;
 
   } catch {
-    document.getElementById("jogos").innerHTML = "Erro ao carregar";
+    document.getElementById("jogos").innerHTML = "Erro na API ❌";
   }
 }
 
-// ================= IA MELHORADA =================
-function analisarJogo(timeA, timeB) {
+// ================= IA REAL =================
+function analisar(timeA,timeB,oddA,oddB){
 
-  // simulação inteligente (pode evoluir depois)
-  let ataqueA = Math.random() * 2 + 1;
-  let ataqueB = Math.random() * 2 + 1;
+  // Probabilidade baseada em odds
+  let probA = (1/oddA) * 100;
+  let probB = (1/oddB) * 100;
 
-  let defesaA = Math.random() * 2;
-  let defesaB = Math.random() * 2;
+  let total = probA + probB;
 
-  let formaA = Math.random() * 5;
-  let formaB = Math.random() * 5;
+  probA = (probA/total)*100;
+  probB = (probB/total)*100;
 
-  let scoreA = ataqueA - defesaB + formaA;
-  let scoreB = ataqueB - defesaA + formaB;
+  // VALUE BET
+  let valorA = probA/100 * oddA;
+  let valorB = probB/100 * oddB;
 
-  let probA = (scoreA / (scoreA + scoreB)) * 100;
-  let probB = 100 - probA;
+  let value = valorA > 1 ? timeA : valorB > 1 ? timeB : "Nenhum";
 
-  let totalGols = ataqueA + ataqueB;
-
-  // IA DE APOSTA
+  // IA decisão
   let sugestao = "";
 
-  if(totalGols > 2.5){
-    sugestao += "🔥 Over 2.5 gols<br>";
-  } else {
-    sugestao += "⚠️ Under 2.5 gols<br>";
-  }
-
   if(probA > 60){
-    sugestao += "🏆 Vitória provável: " + timeA;
+    sugestao = "🔥 Apostar em " + timeA;
   } else if(probB > 60){
-    sugestao += "🏆 Vitória provável: " + timeB;
+    sugestao = "🔥 Apostar em " + timeB;
   } else {
-    sugestao += "⚖️ Jogo equilibrado";
+    sugestao = "⚠️ Jogo arriscado";
   }
-
-  let confianca = Math.abs(probA - probB);
-  let nivel = confianca > 25 ? "🔥 ALTA" :
-              confianca > 10 ? "⚠️ MÉDIA" : "❌ BAIXA";
 
   document.getElementById("saida").innerHTML = `
 <b>${timeA} vs ${timeB}</b><br><br>
 
-📊 ${timeA}: ${probA.toFixed(1)}%<br>
-📊 ${timeB}: ${probB.toFixed(1)}%<br><br>
+📊 Probabilidades reais:<br>
+${timeA}: ${probA.toFixed(1)}%<br>
+${timeB}: ${probB.toFixed(1)}%<br><br>
 
-🎯 Confiança: ${nivel}<br><br>
+💰 Odds:<br>
+${oddA} | ${oddB}<br><br>
 
-💡 Sugestão:<br>${sugestao}
+💎 Value Bet: <b style="color:#22c55e">${value}</b><br><br>
+
+🧠 IA: ${sugestao}
 `;
 
   if(chart) chart.destroy();
@@ -189,10 +134,10 @@ function analisarJogo(timeA, timeB) {
   chart = new Chart(document.getElementById("grafico"), {
     type: 'bar',
     data: {
-      labels: [timeA, timeB],
+      labels: [timeA,timeB],
       datasets: [{
-        label: 'Probabilidade',
-        data: [probA, probB]
+        label: 'Probabilidade (%)',
+        data: [probA,probB]
       }]
     }
   });
