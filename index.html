@@ -20,62 +20,23 @@ header {
   border-bottom: 2px solid #22c55e;
 }
 
-header p {
-  color: #22c55e;
-}
-
 .container {
-  max-width: 1100px;
+  max-width: 1300px;
   margin: auto;
   padding: 20px;
 }
 
 .grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 2fr;
   gap: 20px;
 }
 
 .card {
   background: #0f172a;
   padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 0 20px rgba(34,197,94,0.2);
+  border-radius: 12px;
 }
-
-input {
-  width: 100%;
-  padding: 10px;
-  margin: 5px 0;
-  border-radius: 6px;
-  border: none;
-}
-
-button {
-  width: 100%;
-  padding: 12px;
-  background: #22c55e;
-  border: none;
-  border-radius: 6px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #16a34a;
-}
-
-.resultado {
-  margin-top: 20px;
-  background: #020617;
-  border: 1px solid #22c55e;
-  border-radius: 10px;
-  padding: 15px;
-}
-
-.alta { color: #22c55e; }
-.media { color: #facc15; }
-.baixa { color: #ef4444; }
 
 .jogo {
   padding: 10px;
@@ -85,6 +46,23 @@ button:hover {
 
 .jogo:hover {
   background: #1e293b;
+}
+
+.resultado {
+  background: #020617;
+  border: 1px solid #22c55e;
+  padding: 15px;
+  border-radius: 10px;
+}
+
+button {
+  padding: 10px;
+  width: 100%;
+  background: #22c55e;
+  border: none;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  cursor: pointer;
 }
 
 @media (max-width: 768px) {
@@ -98,46 +76,25 @@ button:hover {
 <body>
 
 <header>
-  <h1>⚽ ANALISTA PRO VIP</h1>
-  <p>Sistema avançado de análise esportiva</p>
+<h1>⚽ ANALISTA PRO VIP</h1>
+<p style="color:#22c55e;">Dashboard inteligente de apostas</p>
 </header>
 
 <div class="container">
 
-<div class="card">
-  <h2>🔥 Jogos do Dia</h2>
-  <button onclick="carregarJogos()">Carregar Jogos</button>
-  <div id="jogos">Clique para buscar jogos...</div>
-</div>
-
 <div class="grid">
 
+<!-- LISTA DE JOGOS -->
 <div class="card">
-<h2>📊 Dados</h2>
-
-<input id="timeA" placeholder="Time A">
-<input id="timeB" placeholder="Time B">
-
-<input id="golsA" type="number" placeholder="Média gols A">
-<input id="golsB" type="number" placeholder="Média gols B">
-
-<input id="sofreA" type="number" placeholder="Sofre gols A">
-<input id="sofreB" type="number" placeholder="Sofre gols B">
-
-<input id="formaA" type="number" placeholder="Forma A (0-5)">
-<input id="formaB" type="number" placeholder="Forma B (0-5)">
-
-<input id="oddA" type="number" placeholder="Odd Time A">
-<input id="oddB" type="number" placeholder="Odd Time B">
-
-<button onclick="analisar()">🔥 Analisar</button>
-
-<div class="resultado" id="saida"></div>
-
+<h2>🔥 Jogos</h2>
+<button onclick="carregarJogos()">Atualizar Jogos</button>
+<div id="jogos"></div>
 </div>
 
+<!-- ANALISE -->
 <div class="card">
-<h2>📈 Probabilidade</h2>
+<h2>📊 Análise Inteligente</h2>
+<div id="saida" class="resultado">Clique em um jogo para analisar</div>
 <canvas id="grafico"></canvas>
 </div>
 
@@ -148,111 +105,97 @@ button:hover {
 <script>
 let chart;
 
-// ================= API SEM KEY =================
+// ================= API =================
 async function carregarJogos() {
-
   try {
     const response = await fetch("https://www.thesportsdb.com/api/v1/json/3/eventsday.php?d=2026-03-22&s=Soccer");
     const data = await response.json();
 
     let html = "";
 
-    if (!data.events) {
-      document.getElementById("jogos").innerHTML = "Sem jogos hoje ❌";
-      return;
-    }
-
-    data.events.slice(0,10).forEach(jogo => {
-
-      let timeA = jogo.strHomeTeam;
-      let timeB = jogo.strAwayTeam;
+    data.events.slice(0,15).forEach(jogo => {
+      let a = jogo.strHomeTeam;
+      let b = jogo.strAwayTeam;
 
       html += `
-        <div class="jogo" onclick="selecionarJogo('${timeA}','${timeB}')">
-          ⚽ ${timeA} vs ${timeB}
+        <div class="jogo" onclick="analisarJogo('${a}','${b}')">
+          ⚽ ${a} vs ${b}
         </div>
       `;
     });
 
     document.getElementById("jogos").innerHTML = html;
 
-  } catch (error) {
-    document.getElementById("jogos").innerHTML = "Erro ao carregar jogos ❌";
+  } catch {
+    document.getElementById("jogos").innerHTML = "Erro ao carregar";
   }
 }
 
-// clicar no jogo
-function selecionarJogo(a,b){
-  document.getElementById("timeA").value = a;
-  document.getElementById("timeB").value = b;
-}
+// ================= IA MELHORADA =================
+function analisarJogo(timeA, timeB) {
 
-// ================= ANALISE =================
-function analisar() {
+  // simulação inteligente (pode evoluir depois)
+  let ataqueA = Math.random() * 2 + 1;
+  let ataqueB = Math.random() * 2 + 1;
 
-let timeA = document.getElementById("timeA").value || "Time A";
-let timeB = document.getElementById("timeB").value || "Time B";
+  let defesaA = Math.random() * 2;
+  let defesaB = Math.random() * 2;
 
-let golsA = +document.getElementById("golsA").value || 0;
-let golsB = +document.getElementById("golsB").value || 0;
-let sofreA = +document.getElementById("sofreA").value || 0;
-let sofreB = +document.getElementById("sofreB").value || 0;
-let formaA = +document.getElementById("formaA").value || 0;
-let formaB = +document.getElementById("formaB").value || 0;
-let oddA = +document.getElementById("oddA").value || 1;
-let oddB = +document.getElementById("oddB").value || 1;
+  let formaA = Math.random() * 5;
+  let formaB = Math.random() * 5;
 
-let ataqueA = golsA - sofreA;
-let ataqueB = golsB - sofreB;
+  let scoreA = ataqueA - defesaB + formaA;
+  let scoreB = ataqueB - defesaA + formaB;
 
-let probA = (ataqueA + formaA + 1) * 15;
-let probB = (ataqueB + formaB + 1) * 15;
+  let probA = (scoreA / (scoreA + scoreB)) * 100;
+  let probB = 100 - probA;
 
-let total = probA + probB;
+  let totalGols = ataqueA + ataqueB;
 
-probA = (probA / total) * 100;
-probB = (probB / total) * 100;
+  // IA DE APOSTA
+  let sugestao = "";
 
-let diff = Math.abs(probA - probB);
+  if(totalGols > 2.5){
+    sugestao += "🔥 Over 2.5 gols<br>";
+  } else {
+    sugestao += "⚠️ Under 2.5 gols<br>";
+  }
 
-let nivel = diff > 20 ? "<span class='alta'>🔥 Alta</span>" :
-             diff > 10 ? "<span class='media'>⚠️ Média</span>" :
-                         "<span class='baixa'>❌ Baixa</span>";
+  if(probA > 60){
+    sugestao += "🏆 Vitória provável: " + timeA;
+  } else if(probB > 60){
+    sugestao += "🏆 Vitória provável: " + timeB;
+  } else {
+    sugestao += "⚖️ Jogo equilibrado";
+  }
 
-let valorA = (probA/100) * oddA;
-let valorB = (probB/100) * oddB;
+  let confianca = Math.abs(probA - probB);
+  let nivel = confianca > 25 ? "🔥 ALTA" :
+              confianca > 10 ? "⚠️ MÉDIA" : "❌ BAIXA";
 
-let valueBet = valorA > 1 ? timeA : valorB > 1 ? timeB : "Nenhum";
-
-let analiseTexto = probA > probB
-  ? `${timeA} apresenta melhor desempenho e maior consistência.`
-  : `${timeB} chega mais forte com base nos dados atuais.`;
-
-document.getElementById("saida").innerHTML = `
-🏆 Favorito: <b>${probA > probB ? timeA : timeB}</b><br><br>
+  document.getElementById("saida").innerHTML = `
+<b>${timeA} vs ${timeB}</b><br><br>
 
 📊 ${timeA}: ${probA.toFixed(1)}%<br>
 📊 ${timeB}: ${probB.toFixed(1)}%<br><br>
 
-💰 Value Bet: <b style="color:#22c55e">${valueBet}</b><br>
 🎯 Confiança: ${nivel}<br><br>
 
-🧠 ${analiseTexto}
+💡 Sugestão:<br>${sugestao}
 `;
 
-if(chart) chart.destroy();
+  if(chart) chart.destroy();
 
-chart = new Chart(document.getElementById("grafico"), {
-type: 'bar',
-data: {
-labels: [timeA, timeB],
-datasets: [{
-label: 'Probabilidade (%)',
-data: [probA, probB]
-}]
-}
-});
-
+  chart = new Chart(document.getElementById("grafico"), {
+    type: 'bar',
+    data: {
+      labels: [timeA, timeB],
+      datasets: [{
+        label: 'Probabilidade',
+        data: [probA, probB]
+      }]
+    }
+  });
 }
 </script>
 
