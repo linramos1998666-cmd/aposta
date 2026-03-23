@@ -65,7 +65,19 @@ async function carregarJogos() {
       let timeA = jogo.home_team;
       let timeB = jogo.away_team;
 
-      let odds = jogo.bookmakers[0].markets[0].outcomes;
+      let oddA = 2;
+let oddB = 2;
+
+if (jogo.bookmakers && jogo.bookmakers.length > 0) {
+  let market = jogo.bookmakers[0].markets.find(m => m.key === "h2h");
+
+  if (market) {
+    let outcomes = market.outcomes;
+
+    oddA = outcomes.find(o => o.name === timeA)?.price || 2;
+    oddB = outcomes.find(o => o.name === timeB)?.price || 2;
+  }
+}
 
       let oddA = odds.find(o=>o.name===timeA)?.price || 2;
       let oddB = odds.find(o=>o.name===timeB)?.price || 2;
